@@ -2120,10 +2120,14 @@ function renderHistory() {
 }
 
 function addSongToHistory(songTitle) {
-  if (!songTitle) return;
-  if (songHistory[0] === songTitle) return; // Evita duplicados seguidos
+  if (!songTitle || songTitle.trim() === '') return;
 
-  songHistory.unshift(songTitle);
+  const cleanTitle = songTitle.trim();
+
+  // Evita duplicar la última canción registrada
+  if (songHistory[0] === cleanTitle) return;
+
+  songHistory.unshift(cleanTitle);
   if (songHistory.length > 10) songHistory.pop(); // Guarda máximo 10 canciones
 
   localStorage.setItem('music_history', JSON.stringify(songHistory));
@@ -2132,13 +2136,27 @@ function addSongToHistory(songTitle) {
 
 renderHistory();
 
-// Registrar canciones al hacer clic en los botones de reproducción
-document.querySelectorAll('.preset-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
+// 1. Escuchar clics en los botones de canciones prediseñadas
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.preset-btn');
+  if (btn) {
     const songName = btn.textContent.trim();
     addSongToHistory(songName);
-  });
+  }
 });
+
+// 2. Detectar cambios en el título principal de la canción en pantalla
+const trackTitleElement = document.querySelector('.track-title');
+if (trackTitleElement) {
+  const observer = new MutationObserver(() => {
+    const titleText = trackTitleElement.textContent.trim();
+    if (titleText && titleText !== 'Tap Play to start music') {
+      addSongToHistory(titleText);
+    }
+  });
+
+  observer.observe(trackTitleElement, { childList: true, characterData: true, subtree: true });
+}
 
 // Minimizar / Restaurar Ventana
 if (toggleHistoryBtn && historyWidget) {
