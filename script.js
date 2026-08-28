@@ -2037,3 +2037,61 @@ if (toggleBtn && notesWidget) {
     toggleBtn.textContent = isMinimized ? '+' : '_';
   });
 }
+
+const poems = [
+  {
+    text: "«Se reviste de fuerza y dignidad, y afronta segura el porvenir.»",
+    author: "— Proverbios 31:25"
+  },
+  {
+    text: "«¡Dichosa tú que has creído porque se cumplirá lo que el Señor te ha dicho!»",
+    author: "— Lucas 1:45"
+  },
+  {
+    text: "«Dios está en medio de ella, no caerá; Dios la ayudará al clarear la mañana.»",
+    author: "— Salmos 46:5"
+  },
+  {
+    text: "«Engañosa es la gracia y vana la hermosura; pero la mujer que teme al Señor, esa será alabada.»",
+    author: "— Proverbios 31:30"
+  },
+  {
+    text: "«El Señor tu Dios está en medio de ti, un guerrero que salva; se gozará sobre ti con alegría, te renovará con su amor.»",
+    author: "— Sofonías 3:17"
+  },
+  {
+    text: "«Porque el Señor estará a tu lado y evitará que tu pie caiga en la trampa.»",
+    author: "— Proverbios 3:26"
+  },
+  {
+    text: "«Que la belleza de ustedes no sea la externa... sino la incorruptible belleza de un espíritu suave y apacible, que tiene gran valor delante de Dios.»",
+    author: "— 1 Pedro 3:3-4"
+  },
+  {
+    text: "«No tengas miedo... todo el pueblo de mi ciudad sabe que eres una mujer virtuosa.»",
+    author: "— Rut 3:11"
+  },
+  {
+    text: "«Él da fuerzas al cansado y multiplica las fuerzas del que no tiene ningunas.»",
+    author: "— Isaías 40:29"
+  },
+  {
+    text: "«Te alabo porque soy una creación admirable; ¡tus obras son maravillosas, y esto lo sé muy bien!»",
+    author: "— Salmos 139:14"
+  }
+];
+
+function loadRandomPoem() {
+  const poemContent = document.getElementById('poemContent');
+  const poemAuthor = document.getElementById('poemAuthor');
+
+  if (poemContent && poemAuthor && poems.length > 0) {
+    const randomIndex = Math.floor(Math.random() * poems.length);
+    const selectedPoem = poems[randomIndex];
+
+    poemContent.innerText = selectedPoem.text;
+    poemAuthor.innerText = selectedPoem.author;
+  }
+}
+
+loadRandomPoem();

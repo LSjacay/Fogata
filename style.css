@@ -425,3 +425,49 @@ body::after {
   font-size: 13px;
   box-sizing: border-box;
 }
+
+/* ==================== ESTILOS DE LA TARJETA DE POEMAS ==================== */
+.poem-widget {
+  position: fixed;
+  bottom: 250px;
+  right: 25px;
+  width: 260px;
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 14px;
+  z-index: 100;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+.poem-header {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #f6f1d1;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+}
+
+.poem-content {
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: #e0e0e0;
+  white-space: pre-line;
+}
+
+.poem-author {
+  font-size: 11px;
+  text-align: right;
+  color: #aaa;
+  margin-top: 8px;
+  font-weight: 500;
+}
