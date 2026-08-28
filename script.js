@@ -2096,12 +2096,19 @@ function loadRandomPoem() {
 
 loadRandomPoem();
 
-// ==================== LÓGICA DEL HISTORIAL ====================
+// ==================== LÓGICA DEL HISTORIAL DEFINITIVA ====================
 const historyWidget = document.getElementById('historyWidget');
 const historyList = document.getElementById('historyList');
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 
 let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
+
+// Extraer el ID exacto del video de YouTube
+function getYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
+  return match ? match[1] : null;
+}
 
 function renderHistory() {
   if (!historyList) return;
@@ -2119,20 +2126,27 @@ function renderHistory() {
     li.textContent = `▶ ${item.title}`;
 
     li.addEventListener('click', () => {
-      if (!item.url) return; // Si no hay enlace, cancela el clic
+      if (!item.url) return;
+      
+      const videoId = getYouTubeId(item.url);
+      if (!videoId) return;
 
-      // Busca el botón original comparando exactamente la URL guardada
-      const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
-      const originalBtn = presetBtns.find(btn => btn.getAttribute('data-url') === item.url);
-
-      if (originalBtn) {
-        originalBtn.click(); // Simula el clic en el botón de tu menú
-      } else if (typeof player !== 'undefined' && player.loadVideoById) {
-        // Plan B: Inyectar directo al reproductor
-        const match = item.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
-        if (match) {
-          player.loadVideoById(match[1]);
+      // 1. Intenta usar la API oficial de YouTube (si existe)
+      if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function') {
+        player.loadVideoById(videoId);
+      } 
+      // 2. Fuerza bruta: Cambiar el reproductor directamente (Infalible)
+      else {
+        const iframe = document.getElementById('ytPlayer');
+        if (iframe && iframe.tagName === 'IFRAME') {
+          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
         }
+      }
+
+      // Actualizar el título en pantalla
+      const trackTitleElement = document.querySelector('.track-title');
+      if (trackTitleElement) {
+        trackTitleElement.textContent = item.title;
       }
     });
 
@@ -2140,27 +2154,23 @@ function renderHistory() {
   });
 }
 
-function addSongToHistory(songTitle, songUrl = '') {
+function addSongToHistory(songTitle, songUrl) {
   if (!songTitle || songTitle.trim() === '') return;
+  
   const cleanTitle = songTitle.trim();
   const lowerTitle = cleanTitle.toLowerCase();
 
   // Ignorar estados de carga
   if (lowerTitle.includes('loading') || lowerTitle.includes('tap play')) return;
 
-  // Buscar si la canción ya existe en el historial
-  const existingIndex = songHistory.findIndex(s => s.title === cleanTitle || (songUrl && s.url === songUrl));
-
+  // Buscar si ya existe para actualizarla
+  const existingIndex = songHistory.findIndex(s => s.title === cleanTitle);
+  
   if (existingIndex !== -1) {
-    // Si ya existe pero no tenía link, actualízalo
-    if (songUrl && !songHistory[existingIndex].url) {
-      songHistory[existingIndex].url = songUrl;
-    }
-    // Mover la canción arriba del todo
-    if (existingIndex !== 0) {
-      const item = songHistory.splice(existingIndex, 1)[0];
-      songHistory.unshift(item);
-    }
+    if (songUrl) songHistory[existingIndex].url = songUrl;
+    // Mover al tope de la lista
+    const item = songHistory.splice(existingIndex, 1)[0];
+    songHistory.unshift(item);
   } else {
     songHistory.unshift({ title: cleanTitle, url: songUrl });
   }
@@ -2173,25 +2183,14 @@ function addSongToHistory(songTitle, songUrl = '') {
 
 renderHistory();
 
-// 1. Capturar la canción y su URL exacta al hacer clic en tus botones
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.preset-btn');
-  if (btn) {
+// Enlazar directamente a los botones de la lista para asegurar la captura de la URL
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
     const songName = btn.textContent.trim();
-    const songUrl = btn.getAttribute('data-url') || '';
+    const songUrl = btn.getAttribute('data-url'); // Captura directa
     addSongToHistory(songName, songUrl);
-  }
-});
-
-// 2. Detectar cambios en la pantalla (solo captura el nombre)
-const trackTitleElement = document.querySelector('.track-title');
-if (trackTitleElement) {
-  const observer = new MutationObserver(() => {
-    const titleText = trackTitleElement.textContent.trim();
-    addSongToHistory(titleText, '');
   });
-  observer.observe(trackTitleElement, { childList: true, characterData: true, subtree: true });
-}
+});
 
 // Minimizar / Restaurar Ventana
 if (toggleHistoryBtn && historyWidget) {
