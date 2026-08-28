@@ -471,3 +471,79 @@ body::after {
   margin-top: 8px;
   font-weight: 500;
 }
+
+/* ==================== VENTANA DE HISTORIAL ==================== */
+.history-widget {
+  position: fixed;
+  bottom: 25px;
+  left: 25px; /* Ubicación abajo a la izquierda */
+  width: 240px;
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  overflow: hidden;
+  z-index: 100;
+  font-family: sans-serif;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.history-header {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: bold;
+  user-select: none;
+}
+
+.window-controls button {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  transition: color 0.2s ease;
+}
+
+.window-controls button:hover {
+  color: #fff;
+}
+
+.history-body {
+  max-height: 140px;
+  overflow-y: auto;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+/* Estado minimizado */
+.history-widget.minimized .history-body {
+  max-height: 0;
+  overflow: hidden;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.history-list li {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #d0d0d0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-list li:last-child {
+  border-bottom: none;
+}

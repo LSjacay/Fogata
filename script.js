@@ -2095,3 +2095,56 @@ function loadRandomPoem() {
 }
 
 loadRandomPoem();
+
+// ==================== LÓGICA DEL HISTORIAL ====================
+const historyWidget = document.getElementById('historyWidget');
+const historyList = document.getElementById('historyList');
+const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+
+let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
+
+function renderHistory() {
+  if (!historyList) return;
+  historyList.innerHTML = '';
+
+  if (songHistory.length === 0) {
+    historyList.innerHTML = '<li style="color: #888;">Sin reproducciones</li>';
+    return;
+  }
+
+  songHistory.forEach((song) => {
+    const li = document.createElement('li');
+    li.textContent = `▶ ${song}`;
+    historyList.appendChild(li);
+  });
+}
+
+function addSongToHistory(songTitle) {
+  if (!songTitle) return;
+  if (songHistory[0] === songTitle) return; // Evita duplicados seguidos
+
+  songHistory.unshift(songTitle);
+  if (songHistory.length > 10) songHistory.pop(); // Guarda máximo 10 canciones
+
+  localStorage.setItem('music_history', JSON.stringify(songHistory));
+  renderHistory();
+}
+
+renderHistory();
+
+// Registrar canciones al hacer clic en los botones de reproducción
+document.querySelectorAll('.preset-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const songName = btn.textContent.trim();
+    addSongToHistory(songName);
+  });
+});
+
+// Minimizar / Restaurar Ventana
+if (toggleHistoryBtn && historyWidget) {
+  toggleHistoryBtn.addEventListener('click', () => {
+    historyWidget.classList.toggle('minimized');
+    const isMinimized = historyWidget.classList.contains('minimized');
+    toggleHistoryBtn.textContent = isMinimized ? '+' : '—';
+  });
+}

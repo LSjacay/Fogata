@@ -121,7 +121,7 @@
 
 <!-- TARJETA DE VERSÍCULO -->
   <div class="poem-widget" id="poemWidget">
-    <div class="poem-header">📖 Versículo del día</div>
+    <div class="poem-header">📖 Vesiculo del Dia</div>
     <div class="poem-content" id="poemContent"></div>
     <div class="poem-author" id="poemAuthor"></div>
   </div>
@@ -135,6 +135,21 @@
     </div>
 <textarea id="notesArea" placeholder="Escribe tus notas aquí..."></textarea>
 </div>
+
+<!-- VENTANA FLOTANTE DEL HISTORIAL -->
+  <div class="history-widget" id="historyWidget">
+    <div class="history-header">
+      <span>🎵 Historial</span>
+      <div class="window-controls">
+        <button id="toggleHistoryBtn" title="Minimizar">—</button>
+      </div>
+    </div>
+    <div class="history-body" id="historyBody">
+      <ul class="history-list" id="historyList">
+        <!-- Se llena dinámicamente -->
+      </ul>
+    </div>
+  </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="script.js"></script>
