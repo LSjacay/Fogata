@@ -2102,6 +2102,7 @@ const historyList = document.getElementById('historyList');
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 
 let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
+let lastClickedUrl = ''; // Memoria para no perder la URL
 
 function getYouTubeId(url) {
   if (!url) return null;
@@ -2129,17 +2130,14 @@ function renderHistory() {
       
       const videoId = getYouTubeId(item.url);
       
-      // Intentar cargarlo vía la API de YouTube si está disponible
       if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function' && videoId) {
         player.loadVideoById(videoId);
       } else {
-        // Plan B: Buscar el botón original y simular un clic
         const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
         const originalBtn = presetBtns.find(btn => btn.getAttribute('data-url') === item.url);
         if (originalBtn) originalBtn.click();
       }
 
-      // Actualizar el texto del reproductor arriba
       const trackTitleElement = document.querySelector('.track-title');
       if (trackTitleElement) trackTitleElement.textContent = item.title;
     });
@@ -2154,22 +2152,18 @@ function addSongToHistory(songTitle, songUrl) {
   const cleanTitle = songTitle.trim();
   const lowerTitle = cleanTitle.toLowerCase();
 
-  // Ignorar "Loading..." o el texto por defecto
   if (lowerTitle.includes('loading') || lowerTitle.includes('tap play')) return;
 
-  // Buscar si la canción ya está en la lista
   const existingIndex = songHistory.findIndex(s => s.title === cleanTitle);
   
   if (existingIndex !== -1) {
-    if (songUrl) songHistory[existingIndex].url = songUrl; // Actualiza el link si lo encontró
-    // Mover la canción arriba del todo
+    if (songUrl) songHistory[existingIndex].url = songUrl;
     const item = songHistory.splice(existingIndex, 1)[0];
     songHistory.unshift(item);
   } else {
     songHistory.unshift({ title: cleanTitle, url: songUrl });
   }
 
-  // Máximo 10 canciones en el historial
   if (songHistory.length > 10) songHistory.pop();
 
   localStorage.setItem('music_history', JSON.stringify(songHistory));
@@ -2178,33 +2172,44 @@ function addSongToHistory(songTitle, songUrl) {
 
 renderHistory();
 
-// 1. Capturar canciones cuando haces clic en la lista (incluso si está en un menú oculto)
+// 1. Detectar clics y MEMORIZAR la URL
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.preset-btn');
   if (btn) {
+    lastClickedUrl = btn.getAttribute('data-url') || '';
     const songName = btn.textContent.trim();
-    const songUrl = btn.getAttribute('data-url');
-    addSongToHistory(songName, songUrl);
+    addSongToHistory(songName, lastClickedUrl);
   }
 });
 
-// 2. Observar el texto del reproductor (Atrapa cambios automáticos y botones prev/next)
+// 2. Observar cuando el título cambia y usar la memoria
 const trackTitleElement = document.querySelector('.track-title');
 if (trackTitleElement) {
   const observer = new MutationObserver(() => {
     const titleText = trackTitleElement.textContent.trim();
     
-    // Intenta encontrar si esa canción tiene un botón asignado para robarle el link
-    const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
-    const activeBtn = presetBtns.find(btn => btn.textContent.trim() === titleText);
-    const url = activeBtn ? activeBtn.getAttribute('data-url') : '';
+    let finalUrl = lastClickedUrl; 
 
-    addSongToHistory(titleText, url);
+    // Intentar sacar la URL directamente desde la API oficial de YouTube
+    if (typeof player !== 'undefined' && typeof player.getVideoUrl === 'function') {
+      const ytUrl = player.getVideoUrl();
+      if (ytUrl && ytUrl.includes('watch')) {
+        finalUrl = ytUrl;
+      }
+    }
+    
+    // Fallback: intentar atrapar enlaces manuales
+    if (!finalUrl) {
+      const urlInput = document.getElementById('ytUrlInput') || document.querySelector('input[type="text"]');
+      if (urlInput && urlInput.value) finalUrl = urlInput.value;
+    }
+    
+    addSongToHistory(titleText, finalUrl);
   });
   observer.observe(trackTitleElement, { childList: true, characterData: true, subtree: true });
 }
 
-// Minimizar / Restaurar Ventana del Historial
+// Minimizar ventana
 if (toggleHistoryBtn && historyWidget) {
   toggleHistoryBtn.addEventListener('click', () => {
     historyWidget.classList.toggle('minimized');
