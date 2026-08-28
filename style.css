@@ -377,19 +377,6 @@ body::after {
   .top-nav { width: calc(100% - 10px); }
 }
 
-/* ==================== ESTILOS DE LA LUNA ==================== */
-.moon {
-  position: absolute;
-  top: 40px;
-  right: 60px;
-  width: 70px;
-  height: 70px;
-  background-color: #f6f1d1;
-  border-radius: 50%;
-  box-shadow: 0 0 25px rgba(246, 241, 209, 0.8), 0 0 50px rgba(246, 241, 209, 0.4);
-  z-index: 2;
-}
-
 /* ==================== ESTILOS DEL BLOC DE NOTAS ==================== */
 .notes-widget {
   position: fixed;
