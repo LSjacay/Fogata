@@ -2101,7 +2101,6 @@ const historyWidget = document.getElementById('historyWidget');
 const historyList = document.getElementById('historyList');
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 
-// Estructura guardada: [{ title: "Nombre", url: "https://..." }]
 let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
 
 function renderHistory() {
@@ -2113,20 +2112,32 @@ function renderHistory() {
     return;
   }
 
-  songHistory.forEach((item, index) => {
+  songHistory.forEach((item) => {
     const li = document.createElement('li');
     li.style.cursor = 'pointer';
     li.title = 'Haz clic para volver a escuchar';
     li.textContent = `▶ ${item.title}`;
 
-    // Al hacer clic en un elemento del historial, reproduce la canción
     li.addEventListener('click', () => {
-      if (item.url && typeof loadVideoFromUrl === 'function') {
-        loadVideoFromUrl(item.url);
+      // Buscar el botón original usando la URL o coincidencias parciales del título
+      const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
+      const originalBtn = presetBtns.find(btn => 
+        (item.url && btn.getAttribute('data-url') === item.url) || 
+        btn.textContent.includes(item.title) || 
+        item.title.includes(btn.textContent.trim())
+      );
+
+      if (originalBtn) {
+        originalBtn.click(); // Hace clic invisible en el botón original
       } else if (item.url && typeof player !== 'undefined' && player.loadVideoById) {
-        // Extraer ID si es un enlace directo de YouTube
-        const videoId = extractYouTubeId(item.url);
-        if (videoId) player.loadVideoById(videoId);
+        // Si no hay botón, fuerza la API de YouTube a cargarla
+        const match = item.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
+        const videoId = match ? match[1] : null;
+        if (videoId) {
+          player.loadVideoById(videoId);
+          const trackTitleElement = document.querySelector('.track-title');
+          if (trackTitleElement) trackTitleElement.textContent = item.title;
+        }
       }
     });
 
@@ -2134,21 +2145,19 @@ function renderHistory() {
   });
 }
 
-function extractYouTubeId(url) {
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
-  return match ? match[1] : null;
-}
-
 function addSongToHistory(songTitle, songUrl = '') {
   if (!songTitle || songTitle.trim() === '') return;
-
   const cleanTitle = songTitle.trim();
+  const lowerTitle = cleanTitle.toLowerCase();
 
-  // Evitar duplicar la última canción registrada
+  // Filtro súper estricto para ignorar cargas temporales
+  if (lowerTitle.includes('loading') || lowerTitle.includes('tap play')) return;
+
+  // Evitar duplicar la misma canción seguida
   if (songHistory.length > 0 && songHistory[0].title === cleanTitle) return;
 
   songHistory.unshift({ title: cleanTitle, url: songUrl });
-  if (songHistory.length > 10) songHistory.pop(); // Guarda máximo 10 canciones
+  if (songHistory.length > 10) songHistory.pop();
 
   localStorage.setItem('music_history', JSON.stringify(songHistory));
   renderHistory();
@@ -2156,29 +2165,30 @@ function addSongToHistory(songTitle, songUrl = '') {
 
 renderHistory();
 
-// 1. Detectar clics en los botones de la playlist (.preset-btn)
+// 1. Detectar clic en los botones
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.preset-btn');
   if (btn) {
-    const songName = btn.textContent.trim();
-    const songUrl = btn.getAttribute('data-url') || '';
-    addSongToHistory(songName, songUrl);
+    // Retrasar 500ms para darle tiempo al reproductor de poner el título real
+    setTimeout(() => {
+      const trackTitleElement = document.querySelector('.track-title');
+      const realTitle = trackTitleElement ? trackTitleElement.textContent.trim() : btn.textContent.trim();
+      const songUrl = btn.getAttribute('data-url') || '';
+      addSongToHistory(realTitle, songUrl);
+    }, 500);
   }
 });
 
-// 2. Detectar cambios en el título principal en pantalla (.track-title)
+// 2. Detectar cambios directos en el texto
 const trackTitleElement = document.querySelector('.track-title');
 if (trackTitleElement) {
   const observer = new MutationObserver(() => {
     const titleText = trackTitleElement.textContent.trim();
-    if (titleText && titleText !== 'Tap Play to start music') {
-      // Intenta obtener la URL del input si existe
-      const urlInput = document.getElementById('ytUrlInput') || document.querySelector('input[type="text"]');
-      const currentUrl = urlInput ? urlInput.value : '';
-      addSongToHistory(titleText, currentUrl);
+    // Solo guardar si no es loading
+    if (!titleText.toLowerCase().includes('loading')) {
+      addSongToHistory(titleText, '');
     }
   });
-
   observer.observe(trackTitleElement, { childList: true, characterData: true, subtree: true });
 }
 
