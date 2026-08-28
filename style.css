@@ -547,3 +547,11 @@ body::after {
 .history-list li:last-child {
   border-bottom: none;
 }
+
+.history-list li:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding-left: 4px;
+  transition: all 0.2s ease;
+}

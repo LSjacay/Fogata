@@ -2101,6 +2101,7 @@ const historyWidget = document.getElementById('historyWidget');
 const historyList = document.getElementById('historyList');
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 
+// Estructura guardada: [{ title: "Nombre", url: "https://..." }]
 let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
 
 function renderHistory() {
@@ -2112,22 +2113,41 @@ function renderHistory() {
     return;
   }
 
-  songHistory.forEach((song) => {
+  songHistory.forEach((item, index) => {
     const li = document.createElement('li');
-    li.textContent = `▶ ${song}`;
+    li.style.cursor = 'pointer';
+    li.title = 'Haz clic para volver a escuchar';
+    li.textContent = `▶ ${item.title}`;
+
+    // Al hacer clic en un elemento del historial, reproduce la canción
+    li.addEventListener('click', () => {
+      if (item.url && typeof loadVideoFromUrl === 'function') {
+        loadVideoFromUrl(item.url);
+      } else if (item.url && typeof player !== 'undefined' && player.loadVideoById) {
+        // Extraer ID si es un enlace directo de YouTube
+        const videoId = extractYouTubeId(item.url);
+        if (videoId) player.loadVideoById(videoId);
+      }
+    });
+
     historyList.appendChild(li);
   });
 }
 
-function addSongToHistory(songTitle) {
+function extractYouTubeId(url) {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
+  return match ? match[1] : null;
+}
+
+function addSongToHistory(songTitle, songUrl = '') {
   if (!songTitle || songTitle.trim() === '') return;
 
   const cleanTitle = songTitle.trim();
 
-  // Evita duplicar la última canción registrada
-  if (songHistory[0] === cleanTitle) return;
+  // Evitar duplicar la última canción registrada
+  if (songHistory.length > 0 && songHistory[0].title === cleanTitle) return;
 
-  songHistory.unshift(cleanTitle);
+  songHistory.unshift({ title: cleanTitle, url: songUrl });
   if (songHistory.length > 10) songHistory.pop(); // Guarda máximo 10 canciones
 
   localStorage.setItem('music_history', JSON.stringify(songHistory));
@@ -2136,22 +2156,26 @@ function addSongToHistory(songTitle) {
 
 renderHistory();
 
-// 1. Escuchar clics en los botones de canciones prediseñadas
+// 1. Detectar clics en los botones de la playlist (.preset-btn)
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.preset-btn');
   if (btn) {
     const songName = btn.textContent.trim();
-    addSongToHistory(songName);
+    const songUrl = btn.getAttribute('data-url') || '';
+    addSongToHistory(songName, songUrl);
   }
 });
 
-// 2. Detectar cambios en el título principal de la canción en pantalla
+// 2. Detectar cambios en el título principal en pantalla (.track-title)
 const trackTitleElement = document.querySelector('.track-title');
 if (trackTitleElement) {
   const observer = new MutationObserver(() => {
     const titleText = trackTitleElement.textContent.trim();
     if (titleText && titleText !== 'Tap Play to start music') {
-      addSongToHistory(titleText);
+      // Intenta obtener la URL del input si existe
+      const urlInput = document.getElementById('ytUrlInput') || document.querySelector('input[type="text"]');
+      const currentUrl = urlInput ? urlInput.value : '';
+      addSongToHistory(titleText, currentUrl);
     }
   });
 
