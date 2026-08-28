@@ -2096,14 +2096,13 @@ function loadRandomPoem() {
 
 loadRandomPoem();
 
-// ==================== LÓGICA DEL HISTORIAL DEFINITIVA ====================
+// ==================== LÓGICA DEL HISTORIAL ====================
 const historyWidget = document.getElementById('historyWidget');
 const historyList = document.getElementById('historyList');
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 
 let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
 
-// Extraer el ID exacto del video de YouTube
 function getYouTubeId(url) {
   if (!url) return null;
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
@@ -2129,25 +2128,20 @@ function renderHistory() {
       if (!item.url) return;
       
       const videoId = getYouTubeId(item.url);
-      if (!videoId) return;
-
-      // 1. Intenta usar la API oficial de YouTube (si existe)
-      if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function') {
+      
+      // Intentar cargarlo vía la API de YouTube si está disponible
+      if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function' && videoId) {
         player.loadVideoById(videoId);
-      } 
-      // 2. Fuerza bruta: Cambiar el reproductor directamente (Infalible)
-      else {
-        const iframe = document.getElementById('ytPlayer');
-        if (iframe && iframe.tagName === 'IFRAME') {
-          iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-        }
+      } else {
+        // Plan B: Buscar el botón original y simular un clic
+        const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
+        const originalBtn = presetBtns.find(btn => btn.getAttribute('data-url') === item.url);
+        if (originalBtn) originalBtn.click();
       }
 
-      // Actualizar el título en pantalla
+      // Actualizar el texto del reproductor arriba
       const trackTitleElement = document.querySelector('.track-title');
-      if (trackTitleElement) {
-        trackTitleElement.textContent = item.title;
-      }
+      if (trackTitleElement) trackTitleElement.textContent = item.title;
     });
 
     historyList.appendChild(li);
@@ -2160,21 +2154,22 @@ function addSongToHistory(songTitle, songUrl) {
   const cleanTitle = songTitle.trim();
   const lowerTitle = cleanTitle.toLowerCase();
 
-  // Ignorar estados de carga
+  // Ignorar "Loading..." o el texto por defecto
   if (lowerTitle.includes('loading') || lowerTitle.includes('tap play')) return;
 
-  // Buscar si ya existe para actualizarla
+  // Buscar si la canción ya está en la lista
   const existingIndex = songHistory.findIndex(s => s.title === cleanTitle);
   
   if (existingIndex !== -1) {
-    if (songUrl) songHistory[existingIndex].url = songUrl;
-    // Mover al tope de la lista
+    if (songUrl) songHistory[existingIndex].url = songUrl; // Actualiza el link si lo encontró
+    // Mover la canción arriba del todo
     const item = songHistory.splice(existingIndex, 1)[0];
     songHistory.unshift(item);
   } else {
     songHistory.unshift({ title: cleanTitle, url: songUrl });
   }
 
+  // Máximo 10 canciones en el historial
   if (songHistory.length > 10) songHistory.pop();
 
   localStorage.setItem('music_history', JSON.stringify(songHistory));
@@ -2183,16 +2178,33 @@ function addSongToHistory(songTitle, songUrl) {
 
 renderHistory();
 
-// Enlazar directamente a los botones de la lista para asegurar la captura de la URL
-document.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+// 1. Capturar canciones cuando haces clic en la lista (incluso si está en un menú oculto)
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.preset-btn');
+  if (btn) {
     const songName = btn.textContent.trim();
-    const songUrl = btn.getAttribute('data-url'); // Captura directa
+    const songUrl = btn.getAttribute('data-url');
     addSongToHistory(songName, songUrl);
-  });
+  }
 });
 
-// Minimizar / Restaurar Ventana
+// 2. Observar el texto del reproductor (Atrapa cambios automáticos y botones prev/next)
+const trackTitleElement = document.querySelector('.track-title');
+if (trackTitleElement) {
+  const observer = new MutationObserver(() => {
+    const titleText = trackTitleElement.textContent.trim();
+    
+    // Intenta encontrar si esa canción tiene un botón asignado para robarle el link
+    const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
+    const activeBtn = presetBtns.find(btn => btn.textContent.trim() === titleText);
+    const url = activeBtn ? activeBtn.getAttribute('data-url') : '';
+
+    addSongToHistory(titleText, url);
+  });
+  observer.observe(trackTitleElement, { childList: true, characterData: true, subtree: true });
+}
+
+// Minimizar / Restaurar Ventana del Historial
 if (toggleHistoryBtn && historyWidget) {
   toggleHistoryBtn.addEventListener('click', () => {
     historyWidget.classList.toggle('minimized');
