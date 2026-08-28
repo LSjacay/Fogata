@@ -376,3 +376,65 @@ body::after {
   #prevTrackBtn { display: none; }
   .top-nav { width: calc(100% - 10px); }
 }
+
+/* ==================== ESTILOS DE LA LUNA ==================== */
+.moon {
+  position: absolute;
+  top: 40px;
+  right: 60px;
+  width: 70px;
+  height: 70px;
+  background-color: #f6f1d1;
+  border-radius: 50%;
+  box-shadow: 0 0 25px rgba(246, 241, 209, 0.8), 0 0 50px rgba(246, 241, 209, 0.4);
+  z-index: 2;
+}
+
+/* ==================== ESTILOS DEL BLOC DE NOTAS ==================== */
+.notes-widget {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 260px;
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  overflow: hidden;
+  z-index: 100;
+  font-family: sans-serif;
+  transition: height 0.3s ease;
+}
+
+.notes-header {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.notes-header button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#notesArea {
+  width: 100%;
+  height: 140px;
+  background: transparent;
+  border: none;
+  color: #f0f0f0;
+  padding: 10px;
+  resize: none;
+  outline: none;
+  font-size: 13px;
+  box-sizing: border-box;
+}

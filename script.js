@@ -2013,3 +2013,27 @@
 
   requestAnimationFrame(render);
 })();
+// ==================== LÓGICA DEL BLOC DE NOTAS ====================
+const notesArea = document.getElementById('notesArea');
+const toggleBtn = document.getElementById('toggleNotesBtn');
+const notesWidget = document.getElementById('notesWidget');
+
+// Cargar nota guardada previamente (si existe)
+if (notesArea) {
+  notesArea.value = localStorage.getItem('user_notes') || '';
+
+  // Guardar cambios automáticamente mientras escribes
+  notesArea.addEventListener('input', () => {
+    localStorage.setItem('user_notes', notesArea.value);
+  });
+}
+
+// Minimizar / Maximizar el bloc de notas
+if (toggleBtn && notesWidget) {
+  let isMinimized = false;
+  toggleBtn.addEventListener('click', () => {
+    isMinimized = !isMinimized;
+    notesArea.style.display = isMinimized ? 'none' : 'block';
+    toggleBtn.textContent = isMinimized ? '+' : '_';
+  });
+}
