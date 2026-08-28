@@ -2119,24 +2119,19 @@ function renderHistory() {
     li.textContent = `▶ ${item.title}`;
 
     li.addEventListener('click', () => {
-      // Buscar el botón original usando la URL o coincidencias parciales del título
+      if (!item.url) return; // Si no hay enlace, cancela el clic
+
+      // Busca el botón original comparando exactamente la URL guardada
       const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
-      const originalBtn = presetBtns.find(btn => 
-        (item.url && btn.getAttribute('data-url') === item.url) || 
-        btn.textContent.includes(item.title) || 
-        item.title.includes(btn.textContent.trim())
-      );
+      const originalBtn = presetBtns.find(btn => btn.getAttribute('data-url') === item.url);
 
       if (originalBtn) {
-        originalBtn.click(); // Hace clic invisible en el botón original
-      } else if (item.url && typeof player !== 'undefined' && player.loadVideoById) {
-        // Si no hay botón, fuerza la API de YouTube a cargarla
+        originalBtn.click(); // Simula el clic en el botón de tu menú
+      } else if (typeof player !== 'undefined' && player.loadVideoById) {
+        // Plan B: Inyectar directo al reproductor
         const match = item.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
-        const videoId = match ? match[1] : null;
-        if (videoId) {
-          player.loadVideoById(videoId);
-          const trackTitleElement = document.querySelector('.track-title');
-          if (trackTitleElement) trackTitleElement.textContent = item.title;
+        if (match) {
+          player.loadVideoById(match[1]);
         }
       }
     });
@@ -2150,13 +2145,26 @@ function addSongToHistory(songTitle, songUrl = '') {
   const cleanTitle = songTitle.trim();
   const lowerTitle = cleanTitle.toLowerCase();
 
-  // Filtro súper estricto para ignorar cargas temporales
+  // Ignorar estados de carga
   if (lowerTitle.includes('loading') || lowerTitle.includes('tap play')) return;
 
-  // Evitar duplicar la misma canción seguida
-  if (songHistory.length > 0 && songHistory[0].title === cleanTitle) return;
+  // Buscar si la canción ya existe en el historial
+  const existingIndex = songHistory.findIndex(s => s.title === cleanTitle || (songUrl && s.url === songUrl));
 
-  songHistory.unshift({ title: cleanTitle, url: songUrl });
+  if (existingIndex !== -1) {
+    // Si ya existe pero no tenía link, actualízalo
+    if (songUrl && !songHistory[existingIndex].url) {
+      songHistory[existingIndex].url = songUrl;
+    }
+    // Mover la canción arriba del todo
+    if (existingIndex !== 0) {
+      const item = songHistory.splice(existingIndex, 1)[0];
+      songHistory.unshift(item);
+    }
+  } else {
+    songHistory.unshift({ title: cleanTitle, url: songUrl });
+  }
+
   if (songHistory.length > 10) songHistory.pop();
 
   localStorage.setItem('music_history', JSON.stringify(songHistory));
@@ -2165,29 +2173,22 @@ function addSongToHistory(songTitle, songUrl = '') {
 
 renderHistory();
 
-// 1. Detectar clic en los botones
+// 1. Capturar la canción y su URL exacta al hacer clic en tus botones
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.preset-btn');
   if (btn) {
-    // Retrasar 500ms para darle tiempo al reproductor de poner el título real
-    setTimeout(() => {
-      const trackTitleElement = document.querySelector('.track-title');
-      const realTitle = trackTitleElement ? trackTitleElement.textContent.trim() : btn.textContent.trim();
-      const songUrl = btn.getAttribute('data-url') || '';
-      addSongToHistory(realTitle, songUrl);
-    }, 500);
+    const songName = btn.textContent.trim();
+    const songUrl = btn.getAttribute('data-url') || '';
+    addSongToHistory(songName, songUrl);
   }
 });
 
-// 2. Detectar cambios directos en el texto
+// 2. Detectar cambios en la pantalla (solo captura el nombre)
 const trackTitleElement = document.querySelector('.track-title');
 if (trackTitleElement) {
   const observer = new MutationObserver(() => {
     const titleText = trackTitleElement.textContent.trim();
-    // Solo guardar si no es loading
-    if (!titleText.toLowerCase().includes('loading')) {
-      addSongToHistory(titleText, '');
-    }
+    addSongToHistory(titleText, '');
   });
   observer.observe(trackTitleElement, { childList: true, characterData: true, subtree: true });
 }
