@@ -2317,8 +2317,7 @@ async function searchYouTubeModal(query) {
   }
 
   try {
-    const response = await fetch(`https://invidious.jing.rocks/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
-    const data = await response.json();
+const response = await fetch(`https://vid.puffyan.us/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
 
     if (searchResultsList) {
       searchResultsList.innerHTML = '';
