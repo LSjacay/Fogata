@@ -265,18 +265,6 @@
     if (e.target === ytModal) ytModal.style.display = 'none';
   });
 
-  loadYtBtn.addEventListener('click', () => {
-    const val = ytUrlInput.value.trim();
-    if (val) loadYouTubeStream(val);
-  });
-
-  ytUrlInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const val = ytUrlInput.value.trim();
-      if (val) loadYouTubeStream(val);
-    }
-  });
-
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const url = btn.getAttribute('data-url');
