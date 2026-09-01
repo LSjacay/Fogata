@@ -254,7 +254,7 @@
 
   openYtBtn.addEventListener('click', () => {
     ytModal.style.display = 'flex';
-    ytSearchInput.focus();
+    if (ytSearchInput) ytSearchInput.focus();
   });
 
   closeYtModal.addEventListener('click', () => {
