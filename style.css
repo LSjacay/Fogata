@@ -671,3 +671,32 @@ body::after {
 .poem-widget {
   display: none;
 }
+/* ==================== SELECTOR DE ÁNIMO (EMOJIS) ==================== */
+.mood-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mood-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  filter: grayscale(30%);
+}
+
+.mood-btn:hover {
+  transform: scale(1.3);
+  filter: grayscale(0%);
+}
+
+/* Transición suave para cuando cambia el texto del versículo */
+.poem-content {
+  transition: opacity 0.2s ease;
+}

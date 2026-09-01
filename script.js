@@ -2261,3 +2261,57 @@ if (openNotesBtn && widgetNotes) {
 if (openVerseBtn && widgetVerse) {
   openVerseBtn.addEventListener('click', () => toggleWidget(widgetVerse));
 }
+
+// ==================== LÓGICA DE VERSÍCULOS POR ÁNIMO ====================
+const moodVerses = {
+  enojo: [
+    "«Airea tu enojo, pero no peques; medita en tu corazón en tu cama, y calla.» — Salmos 4:4",
+    "«El hombre paciente muestra gran prudencia; el iracundo exalta la necedad.» — Proverbios 14:29",
+    "«Dejad la ira y deponed el enojo; no os escandalicéis, pues ello sólo conduce a hacer lo malo.» — Salmos 37:8"
+  ],
+  tristeza: [
+    "«Cercano está Jehová a los quebrantados de corazón; y salva a los contritos de espíritu.» — Salmos 34:18",
+    "«He aquí que yo te daré salud y sanaré tus heridas, dice Jehová.» — Jeremías 30:17",
+    "«Bienaventurados los que lloran, porque ellos recibirán consolación.» — Mateo 5:4"
+  ],
+  felicidad: [
+    "«Este es el día que hizo Jehová; nos gozaremos y alegraremos en él.» — Salmos 118:24",
+    "«Alégrense en Jehová y gócense, justos; y canten con júbilo todos los rectos de corazón.» — Salmos 32:11",
+    "«El corazón alegre hermosea el rostro.» — Proverbios 15:13"
+  ],
+  ansias: [
+    "«Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con acción de gracias.» — Filipenses 4:6",
+    "«Echa sobre Jehová tu carga, y él te sustentará; no dejará para siempre caído al justo.» — Salmos 55:22",
+    "«La paz os dejo, mi paz os doy; yo no os la doy como el mundo la da. No se turbe vuestro corazón, ni tenga miedo.» — Juan 14:27"
+  ],
+  estres: [
+    "«Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.» — Mateo 11:28",
+    "«En paz me acostaré, y asimismo dormiré; porque solo tú, Jehová, me haces vivir confiado.» — Salmos 4:8",
+    "«Estad quietos, y conoced que yo soy Dios.» — Salmos 46:10"
+  ],
+  asco: [
+    "«Apartaos, apartaos, salid de ahí, no toquéis cosa inmunda; salid de en medio de ella.» — Isaías 52:11",
+    "«Aborreced lo malo, seguid lo bueno.» — Romanos 12:9"
+  ]
+};
+
+document.querySelectorAll('.mood-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const mood = btn.getAttribute('data-mood');
+    const versesList = moodVerses[mood];
+    
+    if (versesList && versesList.length > 0) {
+      const randomIndex = Math.floor(Math.random() * versesList.length);
+      const selectedVerse = versesList[randomIndex];
+      
+      const poemContent = document.getElementById('poemContent');
+      if (poemContent) {
+        poemContent.style.opacity = 0;
+        setTimeout(() => {
+          poemContent.textContent = selectedVerse;
+          poemContent.style.opacity = 1;
+        }, 200);
+      }
+    }
+  });
+});
