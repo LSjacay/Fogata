@@ -249,12 +249,12 @@
     }
 
     ytModal.style.display = 'none';
-    ytUrlInput.value = '';
+    
   }
 
   openYtBtn.addEventListener('click', () => {
     ytModal.style.display = 'flex';
-    ytUrlInput.focus();
+    ytSearchInput.focus();
   });
 
   closeYtModal.addEventListener('click', () => {
