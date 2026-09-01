@@ -90,25 +90,28 @@
     </div>
   </div>
 
+ <!-- MODAL DE BÚSQUEDA Y PLAYLIST DE YOUTUBE -->
   <div id="ytModal" class="modal-backdrop" style="display: none;">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>Play Any YouTube Song</h3>
+        <h3>Buscar o Seleccionar Música</h3>
         <button id="closeYtModal" class="close-btn">&times;</button>
       </div>
-      <p class="modal-desc">Paste any single YouTube Song, Video or Playlist link:</p>
+      <p class="modal-desc">Escribe el nombre de la canción o pega un enlace:</p>
       
-      <div class="input-group">
-        <input type="text" id="ytUrlInput" placeholder="Paste YouTube link here..." autocomplete="off">
-        <button id="loadYtBtn">Play</button>
+      <!-- BARRA DE BÚSQUEDA INTEGRADA -->
+      <div class="modal-search-container" style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="ytSearchInput" placeholder="Ej: Lofi hip hop, Nirvana..." autocomplete="off" style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 8px 10px; color: #fff; font-size: 12px; outline: none;" />
+        <button id="ytSearchBtn" style="background: rgba(255, 255, 255, 0.2); border: none; border-radius: 6px; padding: 8px 12px; color: #fff; cursor: pointer; font-size: 12px;">Buscar</button>
       </div>
 
-      <div class="preset-playlists">
-        <span class="preset-label">Trending Campfire Songs & Presets:</span>
+      <!-- LISTA DE RESULTADOS / PRESETS -->
+      <div class="preset-playlists" id="searchResultsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto;">
+        <span class="preset-label">Canciones recomendadas:</span>
         <button class="preset-btn" data-url="https://www.youtube.com/watch?v=blAFxjhg62k">☕ Cozy Lofi Campfire Beats</button>
-        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=rFZHOHl-L8A">📻 Lofi Girl Chill Radio</button>
-        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=ZkUQcn1DU5I&list=RDZkUQcn1DU5I&start_radio=1">Golden Hour (Instrumental)</button>
-        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=hTWKbfoikeg">🌊 Nirvana - Smells Like Teen Spirit (Acoustic)</button>
+        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=rFZHOhL-L8A">🎧 Lofi Girl Chill Radio</button>
+        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=ZkUQcn1DU5I">🎹 golden hour (Piano Instrumental)</button>
+        <button class="preset-btn" data-url="https://www.youtube.com/watch?v=hTWKbfoikeg">🎸 Nirvana - Smells Like Teen Spirit</button>
       </div>
     </div>
   </div>

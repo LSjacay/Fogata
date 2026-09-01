@@ -2315,3 +2315,91 @@ document.querySelectorAll('.mood-btn').forEach((btn) => {
     }
   });
 });
+
+// ==================== BÚSQUEDA DE MÚSICA EN TIEMPO REAL ====================
+const ytSearchInput = document.getElementById('ytSearchInput');
+const ytSearchBtn = document.getElementById('ytSearchBtn');
+const searchResultsList = document.getElementById('searchResultsList');
+
+async function searchYouTubeModal(query) {
+  if (!query.trim()) return;
+  
+  if (searchResultsList) {
+    searchResultsList.innerHTML = '<div style="color: #aaa; font-size: 12px; padding: 10px; text-align: center;">Buscando canciones...</div>';
+  }
+
+  try {
+    const response = await fetch(`https://invidious.jing.rocks/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
+    const data = await response.json();
+
+    if (searchResultsList) {
+      searchResultsList.innerHTML = '';
+    }
+
+    if (!data || data.length === 0) {
+      if (searchResultsList) {
+        searchResultsList.innerHTML = '<div style="color: #ff6b6b; font-size: 12px; padding: 10px; text-align: center;">No se encontraron resultados</div>';
+      }
+      return;
+    }
+
+    // Mostrar los resultados de la búsqueda uno debajo del otro
+    data.slice(0, 6).forEach(video => {
+      const btn = document.createElement('button');
+      btn.className = 'preset-btn';
+      btn.textContent = `🎵 ${video.title}`;
+      btn.title = video.title;
+      const videoUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+      btn.setAttribute('data-url', videoUrl);
+
+      // Al hacer clic, reproduce el video, lo guarda en el historial y cierra el modal
+      btn.addEventListener('click', () => {
+        const videoId = video.videoId;
+        const videoTitle = video.title;
+
+        if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function') {
+          player.loadVideoById(videoId);
+        } else {
+          const iframe = document.getElementById('ytPlayer');
+          if (iframe) {
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+          }
+        }
+
+        const trackTitleElement = document.querySelector('.track-title');
+        if (trackTitleElement) trackTitleElement.textContent = videoTitle;
+
+        if (typeof addSongToHistory === 'function') {
+          addSongToHistory(videoTitle, videoUrl);
+        }
+
+        const ytModal = document.getElementById('ytModal');
+        if (ytModal) ytModal.style.display = 'none';
+      });
+
+      if (searchResultsList) {
+        searchResultsList.appendChild(btn);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error en búsqueda de YouTube:', error);
+    if (searchResultsList) {
+      searchResultsList.innerHTML = '<div style="color: #ff6b6b; font-size: 12px; padding: 10px; text-align: center;">Error al conectar con el buscador</div>';
+    }
+  }
+}
+
+if (ytSearchBtn) {
+  ytSearchBtn.addEventListener('click', () => {
+    if (ytSearchInput) searchYouTubeModal(ytSearchInput.value);
+  });
+}
+
+if (ytSearchInput) {
+  ytSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      searchYouTubeModal(ytSearchInput.value);
+    }
+  });
+}

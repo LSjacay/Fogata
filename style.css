@@ -700,3 +700,67 @@ body::after {
 .poem-content {
   transition: opacity 0.2s ease;
 }
+
+/* ==================== ESTILOS PARA LA BÚSQUEDA EN EL MODAL ==================== */
+.modal-search-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.modal-search-container input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+}
+
+.modal-search-container input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.modal-search-container button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.modal-search-container button:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.preset-playlists {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.preset-playlists .preset-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.2s;
+}
+
+.preset-playlists .preset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
