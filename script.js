@@ -2310,14 +2310,41 @@ const ytSearchBtn = document.getElementById('ytSearchBtn');
 const searchResultsList = document.getElementById('searchResultsList');
 
 async function searchYouTubeModal(query) {
-  if (!query.trim()) return;
+  if (!query || !query.trim()) return;
   
+  const text = query.trim();
+
+  // Si pegan un enlace directo de YouTube (como youtu.be o watch?v=), extraer el ID y reproducir directamente
+  const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+  const match = text.match(ytRegex);
+
+  if (match && match[1]) {
+    const videoId = match[1];
+    if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function') {
+      player.loadVideoById(videoId);
+    } else {
+      const iframe = document.getElementById('ytPlayer');
+      if (iframe) {
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+      }
+    }
+
+    const trackTitleElement = document.querySelector('.track-title');
+    if (trackTitleElement) trackTitleElement.textContent = "Reproduciendo enlace de YouTube";
+
+    const ytModal = document.getElementById('ytModal');
+    if (ytModal) ytModal.style.display = 'none';
+    return;
+  }
+
+  // Si es una búsqueda de texto normal
   if (searchResultsList) {
     searchResultsList.innerHTML = '<div style="color: #aaa; font-size: 12px; padding: 10px; text-align: center;">Buscando canciones...</div>';
   }
 
   try {
-const response = await fetch(`https://vid.puffyan.us/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
+    const response = await fetch(`https://vid.puffyan.us/api/v1/search?q=${encodeURIComponent(text)}&type=video`);
+    const data = await response.json();
 
     if (searchResultsList) {
       searchResultsList.innerHTML = '';
@@ -2330,7 +2357,6 @@ const response = await fetch(`https://vid.puffyan.us/api/v1/search?q=${encodeURI
       return;
     }
 
-    // Mostrar los resultados de la búsqueda uno debajo del otro
     data.slice(0, 6).forEach(video => {
       const btn = document.createElement('button');
       btn.className = 'preset-btn';
@@ -2339,7 +2365,6 @@ const response = await fetch(`https://vid.puffyan.us/api/v1/search?q=${encodeURI
       const videoUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
       btn.setAttribute('data-url', videoUrl);
 
-      // Al hacer clic, reproduce el video, lo guarda en el historial y cierra el modal
       btn.addEventListener('click', () => {
         const videoId = video.videoId;
         const videoTitle = video.title;
