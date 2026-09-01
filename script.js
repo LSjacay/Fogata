@@ -2115,21 +2115,13 @@ function renderHistory() {
 
     li.addEventListener('click', () => {
       if (!item.url) return;
-      
-      const videoId = getYouTubeId(item.url);
-      
-      if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function' && videoId) {
-        player.loadVideoById(videoId);
-      } else {
-        const presetBtns = Array.from(document.querySelectorAll('.preset-btn'));
-        const originalBtn = presetBtns.find(btn => btn.getAttribute('data-url') === item.url);
-        if (originalBtn) originalBtn.click();
-      }
-
-      const trackTitleElement = document.querySelector('.track-title');
-      if (trackTitleElement) trackTitleElement.textContent = item.title;
+    
+    loadYouTubeStream(item.url);
+    
+    const trackTitleElement = document.querySelector('.track-title');
+    if (trackTitleElement) trackTitleElement.textContent = item.title;
     });
-
+    
     historyList.appendChild(li);
   });
 }
