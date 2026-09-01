@@ -2314,7 +2314,7 @@ async function searchYouTubeModal(query) {
   
   const text = query.trim();
 
-  // Si pegan un enlace directo de YouTube (como youtu.be o watch?v=), extraer el ID y reproducir directamente
+  // Detectar si es un enlace de YouTube (corto o largo)
   const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
   const match = text.match(ytRegex);
 
@@ -2334,71 +2334,19 @@ async function searchYouTubeModal(query) {
 
     const ytModal = document.getElementById('ytModal');
     if (ytModal) ytModal.style.display = 'none';
+    
+    // Limpiar input
+    if (ytSearchInput) ytSearchInput.value = '';
     return;
   }
 
-  // Si es una búsqueda de texto normal
+  // Si escriben texto normal, mostrar un mensaje limpio indicando que usen los recomendados o peguen un enlace
   if (searchResultsList) {
-    searchResultsList.innerHTML = '<div style="color: #aaa; font-size: 12px; padding: 10px; text-align: center;">Buscando canciones...</div>';
-  }
-
-  try {
-    const response = await fetch(`https://vid.puffyan.us/api/v1/search?q=${encodeURIComponent(text)}&type=video`);
-    const data = await response.json();
-
-    if (searchResultsList) {
-      searchResultsList.innerHTML = '';
-    }
-
-    if (!data || data.length === 0) {
-      if (searchResultsList) {
-        searchResultsList.innerHTML = '<div style="color: #ff6b6b; font-size: 12px; padding: 10px; text-align: center;">No se encontraron resultados</div>';
-      }
-      return;
-    }
-
-    data.slice(0, 6).forEach(video => {
-      const btn = document.createElement('button');
-      btn.className = 'preset-btn';
-      btn.textContent = `🎵 ${video.title}`;
-      btn.title = video.title;
-      const videoUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
-      btn.setAttribute('data-url', videoUrl);
-
-      btn.addEventListener('click', () => {
-        const videoId = video.videoId;
-        const videoTitle = video.title;
-
-        if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function') {
-          player.loadVideoById(videoId);
-        } else {
-          const iframe = document.getElementById('ytPlayer');
-          if (iframe) {
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-          }
-        }
-
-        const trackTitleElement = document.querySelector('.track-title');
-        if (trackTitleElement) trackTitleElement.textContent = videoTitle;
-
-        if (typeof addSongToHistory === 'function') {
-          addSongToHistory(videoTitle, videoUrl);
-        }
-
-        const ytModal = document.getElementById('ytModal');
-        if (ytModal) ytModal.style.display = 'none';
-      });
-
-      if (searchResultsList) {
-        searchResultsList.appendChild(btn);
-      }
-    });
-
-  } catch (error) {
-    console.error('Error en búsqueda de YouTube:', error);
-    if (searchResultsList) {
-      searchResultsList.innerHTML = '<div style="color: #ff6b6b; font-size: 12px; padding: 10px; text-align: center;">Error al conectar con el buscador</div>';
-    }
+    searchResultsList.innerHTML = `
+      <div style="color: #ffb703; font-size: 12px; padding: 8px; text-align: center; background: rgba(255,183,3,0.1); border-radius: 4px; margin-bottom: 6px;">
+        💡 Pega un enlace de YouTube o elige una de abajo:
+      </div>
+    `;
   }
 }
 
