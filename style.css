@@ -555,3 +555,40 @@ body::after {
   padding-left: 4px;
   transition: all 0.2s ease;
 }
+
+/* ==================== ADAPTACIÓN PARA CELULARES (RESPONSIVE) ==================== */
+@media (max-width: 768px) {
+  
+  /* El Versículo se mueve hacia arriba, debajo del reproductor */
+  .poem-widget {
+    top: 90px;
+    bottom: auto;
+    left: 5%;
+    right: 5%;
+    width: 90%;
+    margin: 0 auto;
+  }
+
+  /* El Historial se estira y se coloca justo arriba de las notas */
+  .history-widget {
+    bottom: 85px;
+    left: 5%;
+    right: 5%;
+    width: 90%;
+    margin: 0 auto;
+  }
+
+  /* El Bloc de Notas queda en la parte inferior centrado */
+  .notes-widget {
+    bottom: 15px;
+    left: 5%;
+    right: 5%;
+    width: 90%;
+    margin: 0 auto;
+  }
+
+  /* Ajuste para que el texto de las listas no se vea gigante */
+  .history-list, .poem-content, #notesArea {
+    font-size: 11px;
+  }
+}
