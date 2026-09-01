@@ -2217,3 +2217,47 @@ if (toggleHistoryBtn && historyWidget) {
     toggleHistoryBtn.textContent = isMinimized ? '+' : '—';
   });
 }
+
+// ==================== LÓGICA DEL MENÚ CIRCULAR ====================
+const menuToggleBtn = document.getElementById('menuToggleBtn');
+const menuOptions = document.getElementById('menuOptions');
+
+const openHistoryBtn = document.getElementById('openHistoryBtn');
+const openNotesBtn = document.getElementById('openNotesBtn');
+const openVerseBtn = document.getElementById('openVerseBtn');
+
+const widgetHistory = document.getElementById('historyWidget');
+const widgetNotes = document.getElementById('notesWidget');
+const widgetVerse = document.getElementById('poemWidget');
+
+// Abrir/Cerrar menú horizontal y rotar el botón principal
+if (menuToggleBtn && menuOptions) {
+  menuToggleBtn.addEventListener('click', () => {
+    menuOptions.classList.toggle('open');
+    if (menuOptions.classList.contains('open')) {
+      menuToggleBtn.style.transform = 'rotate(45deg)';
+    } else {
+      menuToggleBtn.style.transform = 'rotate(0deg)';
+    }
+  });
+}
+
+// Función auxiliar para mostrar u ocultar los widgets
+function toggleWidget(widget) {
+  if (!widget) return;
+  const currentDisplay = window.getComputedStyle(widget).display;
+  widget.style.display = (currentDisplay === 'none') ? 'block' : 'none';
+}
+
+// Conectar cada botón circular con su respectiva ventana
+if (openHistoryBtn && widgetHistory) {
+  openHistoryBtn.addEventListener('click', () => toggleWidget(widgetHistory));
+}
+
+if (openNotesBtn && widgetNotes) {
+  openNotesBtn.addEventListener('click', () => toggleWidget(widgetNotes));
+}
+
+if (openVerseBtn && widgetVerse) {
+  openVerseBtn.addEventListener('click', () => toggleWidget(widgetVerse));
+}
