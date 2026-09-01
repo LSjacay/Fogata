@@ -664,3 +664,10 @@ body::after {
 .history-widget {
   bottom: 90px; 
 }
+
+/* ==================== OCULTAR WIDGETS POR DEFECTO ==================== */
+.history-widget,
+.notes-widget,
+.poem-widget {
+  display: none;
+}
