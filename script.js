@@ -2303,45 +2303,27 @@ const ytSearchBtn = document.getElementById('ytSearchBtn');
 function processAndPlayInput() {
   if (!ytSearchInput) return;
   const query = ytSearchInput.value.trim();
-  
   if (!query) return;
 
-  try {
-    // 1. Cargar el stream en el reproductor de YouTube
-    if (typeof loadYouTubeStream === 'function') {
-      loadYouTubeStream(query);
-    }
+  // Ahora sí puede acceder a loadYouTubeStream porque está dentro del mismo scope
+  loadYouTubeStream(query);
 
-    // 2. Intentar agregar al historial
-    if (typeof addSongToHistory === 'function') {
-      addSongToHistory("Enlace de YouTube", query);
-    }
-
-    // 3. Ocultar modal y limpiar input
-    const ytModal = document.getElementById('ytModal');
-    if (ytModal) ytModal.style.display = 'none';
-    ytSearchInput.value = '';
-
-  } catch (error) {
-    console.error("Error al procesar la búsqueda:", error);
-  }
+  const ytModal = document.getElementById('ytModal');
+  if (ytModal) ytModal.style.display = 'none';
+  ytSearchInput.value = '';
 }
 
-// Evento al botón Buscar
 if (ytSearchBtn) {
   ytSearchBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    e.stopPropagation();
     processAndPlayInput();
   });
 }
 
-// Evento al presionar Enter en el input
 if (ytSearchInput) {
   ytSearchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      e.stopPropagation();
       processAndPlayInput();
     }
   });
