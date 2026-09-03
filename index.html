@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="UTF-8">
@@ -90,7 +90,7 @@
     </div>
   </div>
 
- <!-- MODAL DE BÚSQUEDA Y PLAYLIST DE YOUTUBE -->
+  <!-- MODAL DE BÚSQUEDA Y PLAYLIST DE YOUTUBE -->
   <div id="ytModal" class="modal-backdrop" style="display: none;">
     <div class="modal-box">
       <div class="modal-header">
@@ -100,13 +100,13 @@
       <p class="modal-desc">Escribe el nombre de la canción o pega un enlace:</p>
       
       <!-- BARRA DE BÚSQUEDA INTEGRADA -->
-      <div class="modal-search-container" style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <input type="text" id="ytSearchInput" placeholder="Ej: Lofi hip hop, Nirvana..." autocomplete="off" style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 8px 10px; color: #fff; font-size: 12px; outline: none;" />
-        <button id="ytSearchBtn" style="background: rgba(255, 255, 255, 0.2); border: none; border-radius: 6px; padding: 8px 12px; color: #fff; cursor: pointer; font-size: 12px;">Buscar</button>
+      <div class="modal-search-container">
+        <input type="text" id="ytSearchInput" placeholder="Ej: Lofi hip hop, Nirvana..." autocomplete="off" />
+        <button id="ytSearchBtn">Buscar</button>
       </div>
 
       <!-- LISTA DE RESULTADOS / PRESETS -->
-      <div class="preset-playlists" id="searchResultsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto;">
+      <div class="preset-playlists" id="searchResultsList">
         <span class="preset-label">Canciones recomendadas:</span>
         <button class="preset-btn" data-url="https://www.youtube.com/watch?v=blAFxjhg62k">☕ Cozy Lofi Campfire Beats</button>
         <button class="preset-btn" data-url="https://www.youtube.com/watch?v=rFZHOhL-L8A">🎧 Lofi Girl Chill Radio</button>
@@ -122,7 +122,7 @@
 
   <div class="watermark">@codewithanurag</div>
 
-<!-- TARJETA DE VERSÍCULO -->
+  <!-- TARJETA DE VERSÍCULO -->
   <div class="poem-widget" id="poemWidget">
     <div class="history-header">
       <span>📖 Versículo del Día</span>
@@ -143,16 +143,15 @@
   </div>
 
   <!-- BLOC DE NOTAS -->
-
   <div class="notes-widget" id="notesWidget">
-   <div class="notes-header">
+    <div class="notes-header">
       <span>📝 Mis Notas</span>
       <button id="toggleNotesBtn">_</button>
     </div>
-<textarea id="notesArea" placeholder="Escribe tus notas aquí..."></textarea>
-</div>
+    <textarea id="notesArea" placeholder="Escribe tus notas aquí..."></textarea>
+  </div>
 
-<!-- VENTANA FLOTANTE DEL HISTORIAL -->
+  <!-- VENTANA FLOTANTE DEL HISTORIAL -->
   <div class="history-widget" id="historyWidget">
     <div class="history-header">
       <span>🎵 Historial</span>
@@ -167,7 +166,7 @@
     </div>
   </div>
 
-<!-- MENÚ CIRCULAR EXPANDIBLE -->
+  <!-- MENÚ CIRCULAR EXPANDIBLE -->
   <div class="floating-menu-container">
     <button class="menu-toggle-btn" id="menuToggleBtn">✦</button>
     <div class="menu-options" id="menuOptions">

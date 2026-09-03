@@ -2296,62 +2296,42 @@ document.querySelectorAll('.mood-btn').forEach((btn) => {
   });
 });
 
-// ==================== BÚSQUEDA DE MÚSICA EN TIEMPO REAL ====================
+// ==================== BÚSQUEDA Y CARGA DE MÚSICA EN TIEMPO REAL ====================
 const ytSearchInput = document.getElementById('ytSearchInput');
 const ytSearchBtn = document.getElementById('ytSearchBtn');
 const searchResultsList = document.getElementById('searchResultsList');
 
-async function searchYouTubeModal(query) {
+function processAndPlayInput(query) {
   if (!query || !query.trim()) return;
   
   const text = query.trim();
 
-  // Detectar si es un enlace de YouTube (corto o largo)
-  const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
-  const match = text.match(ytRegex);
+  // Cargamos el stream a través de la función que gestiona el audio de YouTube
+  loadYouTubeStream(text);
 
-  if (match && match[1]) {
-    const videoId = match[1];
-    if (typeof player !== 'undefined' && typeof player.loadVideoById === 'function') {
-      player.loadVideoById(videoId);
-    } else {
-      const iframe = document.getElementById('ytPlayer');
-      if (iframe) {
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-      }
-    }
-
-    const trackTitleElement = document.querySelector('.track-title');
-    if (trackTitleElement) trackTitleElement.textContent = "Reproduciendo enlace de YouTube";
-
-    const ytModal = document.getElementById('ytModal');
-    if (ytModal) ytModal.style.display = 'none';
-    
-    // Limpiar input
-    if (ytSearchInput) ytSearchInput.value = '';
-    return;
-  }
-
-  // Si escriben texto normal, mostrar un mensaje limpio indicando que usen los recomendados o peguen un enlace
-  if (searchResultsList) {
-    searchResultsList.innerHTML = `
-      <div style="color: #ffb703; font-size: 12px; padding: 8px; text-align: center; background: rgba(255,183,3,0.1); border-radius: 4px; margin-bottom: 6px;">
-        💡 Pega un enlace de YouTube o elige una de abajo:
-      </div>
-    `;
-  }
+  // Ocultamos el modal y limpiamos la caja de texto
+  const ytModal = document.getElementById('ytModal');
+  if (ytModal) ytModal.style.display = 'none';
+  if (ytSearchInput) ytSearchInput.value = '';
 }
 
 if (ytSearchBtn) {
   ytSearchBtn.addEventListener('click', () => {
-    if (ytSearchInput) searchYouTubeModal(ytSearchInput.value);
+    if (ytSearchInput) processAndPlayInput(ytSearchInput.value);
   });
 }
 
 if (ytSearchInput) {
   ytSearchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-      searchYouTubeModal(ytSearchInput.value);
+      processAndPlayInput(ytSearchInput.value);
     }
+  });
+}
+
+const closePoemBtn = document.getElementById('closePoemBtn');
+if (closePoemBtn && widgetVerse) {
+  closePoemBtn.addEventListener('click', () => {
+    widgetVerse.style.display = 'none';
   });
 }
