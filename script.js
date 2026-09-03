@@ -2305,35 +2305,39 @@ function processAndPlayInput(query) {
   
   const text = query.trim();
 
-  // 1. Cargamos y reproducimos la canción
+  // 1. Cargar el video en el reproductor
   loadYouTubeStream(text);
 
-  // 2. Guardamos directamente en el historial con un título representativo
-  const trackTitleElement = document.querySelector('.track-title');
-  const currentTitle = (trackTitleElement && trackTitleElement.textContent !== 'Ed Sheeran - Perfect') 
-    ? trackTitleElement.textContent 
-    : "Enlace de YouTube";
+  // 2. Extraer o asignar título para el historial
+  setTimeout(() => {
+    const trackTitleElement = document.querySelector('.track-title');
+    const currentTitle = (trackTitleElement && trackTitleElement.textContent !== 'Ed Sheeran - Perfect') 
+      ? trackTitleElement.textContent 
+      : "Vídeo de YouTube";
 
-  addSongToHistory(currentTitle, text);
+    addSongToHistory(currentTitle, text);
+  }, 1000);
 
-  // 3. Ocultamos el modal y limpiamos el campo de texto
+  // 3. Ocultar modal y limpiar input
   const ytModal = document.getElementById('ytModal');
   if (ytModal) ytModal.style.display = 'none';
   if (ytSearchInput) ytSearchInput.value = '';
 }
 
 if (ytSearchBtn) {
-  ytSearchBtn.addEventListener('click', () => {
+  ytSearchBtn.onclick = function(e) {
+    e.preventDefault();
     if (ytSearchInput) processAndPlayInput(ytSearchInput.value);
-  });
+  };
 }
 
 if (ytSearchInput) {
-  ytSearchInput.addEventListener('keypress', (e) => {
+  ytSearchInput.onkeypress = function(e) {
     if (e.key === 'Enter') {
+      e.preventDefault();
       processAndPlayInput(ytSearchInput.value);
     }
-  });
+  };
 }
 
 const closePoemBtn = document.getElementById('closePoemBtn');
