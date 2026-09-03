@@ -2300,44 +2300,51 @@ document.querySelectorAll('.mood-btn').forEach((btn) => {
 const ytSearchInput = document.getElementById('ytSearchInput');
 const ytSearchBtn = document.getElementById('ytSearchBtn');
 
-function processAndPlayInput(query) {
-  if (!query || !query.trim()) return;
+function processAndPlayInput() {
+  if (!ytSearchInput) return;
+  const query = ytSearchInput.value.trim();
   
-  const text = query.trim();
+  if (!query) return;
 
-  // 1. Cargar el video en el reproductor
-  loadYouTubeStream(text);
+  try {
+    // 1. Cargar el stream en el reproductor de YouTube
+    if (typeof loadYouTubeStream === 'function') {
+      loadYouTubeStream(query);
+    }
 
-  // 2. Extraer o asignar título para el historial
-  setTimeout(() => {
-    const trackTitleElement = document.querySelector('.track-title');
-    const currentTitle = (trackTitleElement && trackTitleElement.textContent !== 'Ed Sheeran - Perfect') 
-      ? trackTitleElement.textContent 
-      : "Vídeo de YouTube";
+    // 2. Intentar agregar al historial
+    if (typeof addSongToHistory === 'function') {
+      addSongToHistory("Enlace de YouTube", query);
+    }
 
-    addSongToHistory(currentTitle, text);
-  }, 1000);
+    // 3. Ocultar modal y limpiar input
+    const ytModal = document.getElementById('ytModal');
+    if (ytModal) ytModal.style.display = 'none';
+    ytSearchInput.value = '';
 
-  // 3. Ocultar modal y limpiar input
-  const ytModal = document.getElementById('ytModal');
-  if (ytModal) ytModal.style.display = 'none';
-  if (ytSearchInput) ytSearchInput.value = '';
+  } catch (error) {
+    console.error("Error al procesar la búsqueda:", error);
+  }
 }
 
+// Evento al botón Buscar
 if (ytSearchBtn) {
-  ytSearchBtn.onclick = function(e) {
+  ytSearchBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    if (ytSearchInput) processAndPlayInput(ytSearchInput.value);
-  };
+    e.stopPropagation();
+    processAndPlayInput();
+  });
 }
 
+// Evento al presionar Enter en el input
 if (ytSearchInput) {
-  ytSearchInput.onkeypress = function(e) {
+  ytSearchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      processAndPlayInput(ytSearchInput.value);
+      e.stopPropagation();
+      processAndPlayInput();
     }
-  };
+  });
 }
 
 const closePoemBtn = document.getElementById('closePoemBtn');
