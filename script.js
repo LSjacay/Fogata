@@ -31,8 +31,8 @@
   const openYtBtn = document.getElementById('openYtBtn');
   const ytModal = document.getElementById('ytModal');
   const closeYtModal = document.getElementById('closeYtModal');
-  const ytUrlInput = document.getElementById('ytUrlInput');
-  const loadYtBtn = document.getElementById('loadYtBtn');
+  const ytSearchInput = document.getElementById('ytSearchInput');
+  const ytSearchBtn = document.getElementById('ytSearchBtn');
   const fileInput = document.getElementById('fileInput');
 
   const mouse = {
@@ -230,9 +230,14 @@
       .then(data => {
         if (data && data.title) {
           trackTitle.textContent = data.title;
+          addSongToHistory(data.title, url);
+        } else {
+          addSongToHistory("YouTube Video", url);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        addSongToHistory("YouTube Video", url);
+      });
 
     if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
       try {
@@ -248,8 +253,7 @@
       createYTPlayer();
     }
 
-    ytModal.style.display = 'none';
-    
+    if (ytModal) ytModal.style.display = 'none';
   }
 
   openYtBtn.addEventListener('click', () => {
@@ -756,38 +760,6 @@
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   }
 
-  function playAcousticGuitarChord() {
-    initAudio();
-    if (!audioCtx) return;
-    try {
-      const chord = CHORD_PROGRESSIONS[currentChordIdx];
-      currentChordIdx = (currentChordIdx + 1) % CHORD_PROGRESSIONS.length;
-      const baseTime = audioCtx.currentTime;
-
-      chord.forEach((freq, stringIdx) => {
-        const t = baseTime + stringIdx * 0.028;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        const filter = audioCtx.createBiquadFilter();
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, t);
-
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(freq * 3.5, t);
-        filter.frequency.exponentialRampToValueAtTime(freq * 1.1, t + 1.2);
-
-        gain.gain.setValueAtTime(0.001, t);
-        gain.gain.linearRampToValueAtTime(0.05, t + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 2.0);
-
-        osc.connect(filter).connect(gain).connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 2.0);
-      });
-    } catch (e) {}
-  }
-
   function getBaseFirePos() {
     return {
       x: W / 2,
@@ -997,7 +969,6 @@
       const alpha = s.alpha * twinkle;
 
       if (s.tier === 'hero') {
-
         ctx.fillStyle = `rgba(200, 220, 255, ${alpha * 0.15})`;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI * 2);
@@ -1634,9 +1605,7 @@
     let footLift = 0;
     let kneeBounce = 0;
     if (isPlayingMusic) {
-
       const beat = (Date.now() * 0.0055) % (Math.PI * 2);
-
       const tapWave = Math.pow(Math.max(0, Math.sin(beat)), 1.7);
       footLift = tapWave * 5.2;
       kneeBounce = tapWave * 1.5;
@@ -1999,24 +1968,104 @@
     requestAnimationFrame(render);
   }
 
+  // ==================== LÓGICA DEL HISTORIAL ====================
+  const historyWidget = document.getElementById('historyWidget');
+  const historyList = document.getElementById('historyList');
+  const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+
+  let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
+
+  function renderHistory() {
+    if (!historyList) return;
+    historyList.innerHTML = '';
+
+    if (songHistory.length === 0) {
+      historyList.innerHTML = '<li style="color: #888;">Sin reproducciones</li>';
+      return;
+    }
+
+    songHistory.forEach((item) => {
+      const li = document.createElement('li');
+      li.style.cursor = 'pointer';
+      li.title = 'Haz clic para volver a escuchar';
+      li.textContent = `▶ ${item.title}`;
+
+      li.addEventListener('click', () => {
+        if (!item.url) return;
+        loadYouTubeStream(item.url);
+      });
+      
+      historyList.appendChild(li);
+    });
+  }
+
+  function addSongToHistory(songTitle, songUrl) {
+    if (!songTitle || songTitle.trim() === '') return;
+    
+    const cleanTitle = songTitle.trim();
+    const lowerTitle = cleanTitle.toLowerCase();
+
+    if (lowerTitle.includes('loading') || lowerTitle.includes('tap play')) return;
+
+    const existingIndex = songHistory.findIndex(s => s.title === cleanTitle);
+    
+    if (existingIndex !== -1) {
+      if (songUrl) songHistory[existingIndex].url = songUrl;
+      const item = songHistory.splice(existingIndex, 1)[0];
+      songHistory.unshift(item);
+    } else {
+      songHistory.unshift({ title: cleanTitle, url: songUrl });
+    }
+
+    if (songHistory.length > 10) songHistory.pop();
+
+    localStorage.setItem('music_history', JSON.stringify(songHistory));
+    renderHistory();
+  }
+
+  renderHistory();
+
+  // ==================== BÚSQUEDA Y CARGA DE MÚSICA EN TIEMPO REAL ====================
+  function processAndPlayInput() {
+    if (!ytSearchInput) return;
+    const query = ytSearchInput.value.trim();
+    if (!query) return;
+
+    loadYouTubeStream(query);
+    ytSearchInput.value = '';
+  }
+
+  if (ytSearchBtn) {
+    ytSearchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      processAndPlayInput();
+    });
+  }
+
+  if (ytSearchInput) {
+    ytSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        processAndPlayInput();
+      }
+    });
+  }
+
   requestAnimationFrame(render);
 })();
+
 // ==================== LÓGICA DEL BLOC DE NOTAS ====================
 const notesArea = document.getElementById('notesArea');
 const toggleBtn = document.getElementById('toggleNotesBtn');
 const notesWidget = document.getElementById('notesWidget');
 
-// Cargar nota guardada previamente (si existe)
 if (notesArea) {
   notesArea.value = localStorage.getItem('user_notes') || '';
-
-  // Guardar cambios automáticamente mientras escribes
   notesArea.addEventListener('input', () => {
     localStorage.setItem('user_notes', notesArea.value);
   });
 }
 
-// Minimizar / Maximizar el bloc de notas
 if (toggleBtn && notesWidget) {
   let isMinimized = false;
   toggleBtn.addEventListener('click', () => {
@@ -2027,46 +2076,16 @@ if (toggleBtn && notesWidget) {
 }
 
 const poems = [
-  {
-    text: "«Se reviste de fuerza y dignidad, y afronta segura el porvenir.»",
-    author: "— Proverbios 31:25"
-  },
-  {
-    text: "«¡Dichosa tú que has creído porque se cumplirá lo que el Señor te ha dicho!»",
-    author: "— Lucas 1:45"
-  },
-  {
-    text: "«Dios está en medio de ella, no caerá; Dios la ayudará al clarear la mañana.»",
-    author: "— Salmos 46:5"
-  },
-  {
-    text: "«Engañosa es la gracia y vana la hermosura; pero la mujer que teme al Señor, esa será alabada.»",
-    author: "— Proverbios 31:30"
-  },
-  {
-    text: "«El Señor tu Dios está en medio de ti, un guerrero que salva; se gozará sobre ti con alegría, te renovará con su amor.»",
-    author: "— Sofonías 3:17"
-  },
-  {
-    text: "«Porque el Señor estará a tu lado y evitará que tu pie caiga en la trampa.»",
-    author: "— Proverbios 3:26"
-  },
-  {
-    text: "«Que la belleza de ustedes no sea la externa... sino la incorruptible belleza de un espíritu suave y apacible, que tiene gran valor delante de Dios.»",
-    author: "— 1 Pedro 3:3-4"
-  },
-  {
-    text: "«No tengas miedo... todo el pueblo de mi ciudad sabe que eres una mujer virtuosa.»",
-    author: "— Rut 3:11"
-  },
-  {
-    text: "«Él da fuerzas al cansado y multiplica las fuerzas del que no tiene ningunas.»",
-    author: "— Isaías 40:29"
-  },
-  {
-    text: "«Te alabo porque soy una creación admirable; ¡tus obras son maravillosas, y esto lo sé muy bien!»",
-    author: "— Salmos 139:14"
-  }
+  { text: "«Se reviste de fuerza y dignidad, y afronta segura el porvenir.»", author: "— Proverbios 31:25" },
+  { text: "«¡Dichosa tú que has creído porque se cumplirá lo que el Señor te ha dicho!»", author: "— Lucas 1:45" },
+  { text: "«Dios está en medio de ella, no caerá; Dios la ayudará al clarear la mañana.»", author: "— Salmos 46:5" },
+  { text: "«Engañosa es la gracia y vana la hermosura; pero la mujer que teme al Señor, esa será alabada.»", author: "— Proverbios 31:30" },
+  { text: "«El Señor tu Dios está en medio de ti, un guerrero que salva; se gozará sobre ti con alegría, te renovará con su amor.»", author: "— Sofonías 3:17" },
+  { text: "«Porque el Señor estará a tu lado y evitará que tu pie caiga en la trampa.»", author: "— Proverbios 3:26" },
+  { text: "«Que la belleza de ustedes no sea la externa... sino la incorruptible belleza de un espíritu suave y apacible, que tiene gran valor delante de Dios.»", author: "— 1 Pedro 3:3-4" },
+  { text: "«No tengas miedo... todo el pueblo de mi ciudad sabe que eres una mujer virtuosa.»", author: "— Rut 3:11" },
+  { text: "«Él da fuerzas al cansado y multiplica las fuerzas del que no tiene ningunas.»", author: "— Isaías 40:29" },
+  { text: "«Te alabo porque soy una creación admirable; ¡tus obras son maravillosas, y esto lo sé muy bien!»", author: "— Salmos 139:14" }
 ];
 
 function loadRandomPoem() {
@@ -2076,7 +2095,6 @@ function loadRandomPoem() {
   if (poemContent && poemAuthor && poems.length > 0) {
     const randomIndex = Math.floor(Math.random() * poems.length);
     const selectedPoem = poems[randomIndex];
-
     poemContent.innerText = selectedPoem.text;
     poemAuthor.innerText = selectedPoem.author;
   }
@@ -2084,112 +2102,8 @@ function loadRandomPoem() {
 
 loadRandomPoem();
 
-// ==================== LÓGICA DEL HISTORIAL ====================
-const historyWidget = document.getElementById('historyWidget');
-const historyList = document.getElementById('historyList');
+// ==================== CONTROL DEL HISTORIAL ====================
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
-
-let songHistory = JSON.parse(localStorage.getItem('music_history')) || [];
-let lastClickedUrl = ''; // Memoria para no perder la URL
-
-function getYouTubeId(url) {
-  if (!url) return null;
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|&v=))([\w-]{11})/);
-  return match ? match[1] : null;
-}
-
-function renderHistory() {
-  if (!historyList) return;
-  historyList.innerHTML = '';
-
-  if (songHistory.length === 0) {
-    historyList.innerHTML = '<li style="color: #888;">Sin reproducciones</li>';
-    return;
-  }
-
-  songHistory.forEach((item) => {
-    const li = document.createElement('li');
-    li.style.cursor = 'pointer';
-    li.title = 'Haz clic para volver a escuchar';
-    li.textContent = `▶ ${item.title}`;
-
-    li.addEventListener('click', () => {
-      if (!item.url) return;
-    
-    loadYouTubeStream(item.url);
-    
-    const trackTitleElement = document.querySelector('.track-title');
-    if (trackTitleElement) trackTitleElement.textContent = item.title;
-    });
-    
-    historyList.appendChild(li);
-  });
-}
-
-function addSongToHistory(songTitle, songUrl) {
-  if (!songTitle || songTitle.trim() === '') return;
-  
-  const cleanTitle = songTitle.trim();
-  const lowerTitle = cleanTitle.toLowerCase();
-
-  if (lowerTitle.includes('loading') || lowerTitle.includes('tap play')) return;
-
-  const existingIndex = songHistory.findIndex(s => s.title === cleanTitle);
-  
-  if (existingIndex !== -1) {
-    if (songUrl) songHistory[existingIndex].url = songUrl;
-    const item = songHistory.splice(existingIndex, 1)[0];
-    songHistory.unshift(item);
-  } else {
-    songHistory.unshift({ title: cleanTitle, url: songUrl });
-  }
-
-  if (songHistory.length > 10) songHistory.pop();
-
-  localStorage.setItem('music_history', JSON.stringify(songHistory));
-  renderHistory();
-}
-
-renderHistory();
-
-// 1. Detectar clics y MEMORIZAR la URL
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.preset-btn');
-  if (btn) {
-    lastClickedUrl = btn.getAttribute('data-url') || '';
-    const songName = btn.textContent.trim();
-    addSongToHistory(songName, lastClickedUrl);
-  }
-});
-
-// 2. Observar cuando el título cambia y usar la memoria
-const trackTitleElement = document.querySelector('.track-title');
-if (trackTitleElement) {
-  const observer = new MutationObserver(() => {
-    const titleText = trackTitleElement.textContent.trim();
-    
-    let finalUrl = lastClickedUrl; 
-
-    // Intentar sacar la URL directamente desde la API oficial de YouTube
-    if (typeof player !== 'undefined' && typeof player.getVideoUrl === 'function') {
-      const ytUrl = player.getVideoUrl();
-      if (ytUrl && ytUrl.includes('watch')) {
-        finalUrl = ytUrl;
-      }
-    }
-    
-    // Fallback: intentar atrapar enlaces manuales
-    if (!finalUrl) {
-      const urlInput = document.getElementById('ytUrlInput') || document.querySelector('input[type="text"]');
-      if (urlInput && urlInput.value) finalUrl = urlInput.value;
-    }
-    
-    addSongToHistory(titleText, finalUrl);
-  });
-  observer.observe(trackTitleElement, { childList: true, characterData: true, subtree: true });
-}
-
-// Minimizar ventana
 if (toggleHistoryBtn && historyWidget) {
   toggleHistoryBtn.addEventListener('click', () => {
     historyWidget.classList.toggle('minimized');
@@ -2201,45 +2115,34 @@ if (toggleHistoryBtn && historyWidget) {
 // ==================== LÓGICA DEL MENÚ CIRCULAR ====================
 const menuToggleBtn = document.getElementById('menuToggleBtn');
 const menuOptions = document.getElementById('menuOptions');
-
 const openHistoryBtn = document.getElementById('openHistoryBtn');
 const openNotesBtn = document.getElementById('openNotesBtn');
 const openVerseBtn = document.getElementById('openVerseBtn');
-
 const widgetHistory = document.getElementById('historyWidget');
-const widgetNotes = document.getElementById('notesWidget');
 const widgetVerse = document.getElementById('poemWidget');
 
-// Abrir/Cerrar menú horizontal y rotar el botón principal
 if (menuToggleBtn && menuOptions) {
   menuToggleBtn.addEventListener('click', () => {
     menuOptions.classList.toggle('open');
-    if (menuOptions.classList.contains('open')) {
-      menuToggleBtn.style.transform = 'rotate(45deg)';
-    } else {
-      menuToggleBtn.style.transform = 'rotate(0deg)';
-    }
+    menuToggleBtn.style.transform = menuOptions.classList.contains('open') ? 'rotate(45deg)' : 'rotate(0deg)';
   });
 }
 
-// Función auxiliar para mostrar u ocultar los widgets
 function toggleWidget(widget) {
   if (!widget) return;
   const currentDisplay = window.getComputedStyle(widget).display;
   widget.style.display = (currentDisplay === 'none') ? 'block' : 'none';
 }
 
-// Conectar cada botón circular con su respectiva ventana
-if (openHistoryBtn && widgetHistory) {
-  openHistoryBtn.addEventListener('click', () => toggleWidget(widgetHistory));
-}
+if (openHistoryBtn && widgetHistory) openHistoryBtn.addEventListener('click', () => toggleWidget(widgetHistory));
+if (openNotesBtn && notesWidget) openNotesBtn.addEventListener('click', () => toggleWidget(notesWidget));
+if (openVerseBtn && widgetVerse) openVerseBtn.addEventListener('click', () => toggleWidget(widgetVerse));
 
-if (openNotesBtn && widgetNotes) {
-  openNotesBtn.addEventListener('click', () => toggleWidget(widgetNotes));
-}
-
-if (openVerseBtn && widgetVerse) {
-  openVerseBtn.addEventListener('click', () => toggleWidget(widgetVerse));
+const closePoemBtn = document.getElementById('closePoemBtn');
+if (closePoemBtn && widgetVerse) {
+  closePoemBtn.addEventListener('click', () => {
+    widgetVerse.style.display = 'none';
+  });
 }
 
 // ==================== LÓGICA DE VERSÍCULOS POR ÁNIMO ====================
@@ -2295,43 +2198,3 @@ document.querySelectorAll('.mood-btn').forEach((btn) => {
     }
   });
 });
-
-// ==================== BÚSQUEDA Y CARGA DE MÚSICA EN TIEMPO REAL ====================
-const ytSearchInput = document.getElementById('ytSearchInput');
-const ytSearchBtn = document.getElementById('ytSearchBtn');
-
-function processAndPlayInput() {
-  if (!ytSearchInput) return;
-  const query = ytSearchInput.value.trim();
-  if (!query) return;
-
-  // Ahora sí puede acceder a loadYouTubeStream porque está dentro del mismo scope
-  loadYouTubeStream(query);
-
-  const ytModal = document.getElementById('ytModal');
-  if (ytModal) ytModal.style.display = 'none';
-  ytSearchInput.value = '';
-}
-
-if (ytSearchBtn) {
-  ytSearchBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    processAndPlayInput();
-  });
-}
-
-if (ytSearchInput) {
-  ytSearchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      processAndPlayInput();
-    }
-  });
-}
-
-const closePoemBtn = document.getElementById('closePoemBtn');
-if (closePoemBtn && widgetVerse) {
-  closePoemBtn.addEventListener('click', () => {
-    widgetVerse.style.display = 'none';
-  });
-}
