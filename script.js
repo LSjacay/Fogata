@@ -2299,17 +2299,24 @@ document.querySelectorAll('.mood-btn').forEach((btn) => {
 // ==================== BÚSQUEDA Y CARGA DE MÚSICA EN TIEMPO REAL ====================
 const ytSearchInput = document.getElementById('ytSearchInput');
 const ytSearchBtn = document.getElementById('ytSearchBtn');
-const searchResultsList = document.getElementById('searchResultsList');
 
 function processAndPlayInput(query) {
   if (!query || !query.trim()) return;
   
   const text = query.trim();
 
-  // Cargamos el stream a través de la función que gestiona el audio de YouTube
+  // 1. Cargamos y reproducimos la canción
   loadYouTubeStream(text);
 
-  // Ocultamos el modal y limpiamos la caja de texto
+  // 2. Guardamos directamente en el historial con un título representativo
+  const trackTitleElement = document.querySelector('.track-title');
+  const currentTitle = (trackTitleElement && trackTitleElement.textContent !== 'Ed Sheeran - Perfect') 
+    ? trackTitleElement.textContent 
+    : "Enlace de YouTube";
+
+  addSongToHistory(currentTitle, text);
+
+  // 3. Ocultamos el modal y limpiamos el campo de texto
   const ytModal = document.getElementById('ytModal');
   if (ytModal) ytModal.style.display = 'none';
   if (ytSearchInput) ytSearchInput.value = '';
